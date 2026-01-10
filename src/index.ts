@@ -1,13 +1,12 @@
 import { FelicitySolarAPI } from "./FelicitySolarAPI";
 import { FelicityWorker } from "./FelicityWorker";
 import http from "node:http";
-import { exit, loadEnvFile } from "node:process";
+import { loadEnvFile } from "node:process";
 
 try {
     loadEnvFile(".env");
 } catch (e) {
     console.warn("No .env file found, proceeding with existing environment variables.");
-    exit(0);
 }
 
 let worker: FelicityWorker;
