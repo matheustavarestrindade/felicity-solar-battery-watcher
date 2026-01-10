@@ -7,6 +7,7 @@ try {
     loadEnvFile(".env");
 } catch (e) {
     console.warn("No .env file found, proceeding with existing environment variables.");
+    console.log(process.env);
 }
 
 let worker: FelicityWorker;
