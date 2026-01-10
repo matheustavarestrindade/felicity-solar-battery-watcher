@@ -2,7 +2,6 @@ services:
   app:
     build: .
     volumes:
-      - ./src:/usr/src/app/src
       - ./felicitySolarToken.json:/usr/src/app/felicitySolarToken.json
     ports:
       - "3100:3000"
