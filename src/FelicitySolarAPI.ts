@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import fs from "fs/promises";
 
 export class FelicitySolarAPI {
+    private JSON_FILE_PATH = "data/felicitySolarToken.json";
+
     private email: string;
     private passwordHash: string;
 
@@ -86,12 +88,12 @@ export class FelicitySolarAPI {
     }
 
     private async loadFromFile() {
-        const fileExists = await fs.stat("felicitySolarToken.json").catch(() => false);
+        const fileExists = await fs.stat(this.JSON_FILE_PATH).catch(() => false);
         if (!fileExists) {
             return;
         }
 
-        const data = await fs.readFile("felicitySolarToken.json", "utf-8");
+        const data = await fs.readFile(this.JSON_FILE_PATH, "utf-8");
         try {
             const parsed = JSON.parse(data) as { email: string; bearer: string; exp: number }[];
             if (parsed.length === 0) return;
@@ -111,7 +113,7 @@ export class FelicitySolarAPI {
         }
 
         let data: { email: string; bearer: string; exp: number }[] = [];
-        const fileExists = await fs.stat("felicitySolarToken.json").catch(() => false);
+        const fileExists = await fs.stat(this.JSON_FILE_PATH).catch(() => false);
 
         if (!fileExists) {
             data.push({
@@ -119,11 +121,11 @@ export class FelicitySolarAPI {
                 bearer: this.bearerToken,
                 exp: this.tokenExpiration.getTime(),
             });
-            await fs.writeFile("felicitySolarToken.json", JSON.stringify(data));
+            await fs.writeFile(this.JSON_FILE_PATH, JSON.stringify(data));
             return;
         }
 
-        const fileData = await fs.readFile("felicitySolarToken.json", "utf-8");
+        const fileData = await fs.readFile(this.JSON_FILE_PATH, "utf-8");
         data = JSON.parse(fileData) as { email: string; bearer: string; exp: number }[];
         const found = data.find((item) => item.email === this.email);
         if (found && found.exp > Date.now()) {
@@ -131,7 +133,7 @@ export class FelicitySolarAPI {
         } else if (found) {
             found.bearer = this.bearerToken;
             found.exp = this.tokenExpiration.getTime();
-            await fs.writeFile("felicitySolarToken.json", JSON.stringify(data));
+            await fs.writeFile(this.JSON_FILE_PATH, JSON.stringify(data));
             return;
         }
         const newEntry = {
@@ -140,7 +142,7 @@ export class FelicitySolarAPI {
             exp: this.tokenExpiration.getTime(),
         };
         data.push(newEntry);
-        await fs.writeFile("felicitySolarToken.json", JSON.stringify(data));
+        await fs.writeFile(this.JSON_FILE_PATH, JSON.stringify(data));
     }
 
     private async loadDevicesSerialNumbers() {

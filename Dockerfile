@@ -7,7 +7,6 @@ COPY package*.json ./
 
 # Install dependencies
 RUN npm install
-RUN touch felicitySolarToken.json
 
 # Copy the rest of your code
 COPY . .
