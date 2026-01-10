@@ -1,0 +1,17 @@
+{
+  "name": "felicity_ha_monitor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "encrypt.js",
+  "scripts": {
+    "start": "tsx src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
+    "jsonwebtoken": "^9.0.3",
+    "tsx": "^4.21.0"
+  }
+}

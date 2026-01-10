@@ -1,0 +1,10 @@
+services:
+  app:
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - ./src:/usr/src/app/src
+      - ./felicitySolarToken.json:/usr/src/app/felicitySolarToken.json
+    ports:
+      - "3100:3000"
