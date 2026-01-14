@@ -25,9 +25,7 @@ export class FelicitySolarAPI {
     public async initialize() {
         await this.loadFromFile();
         const loggedIn = await this.isLoggedIn();
-        if (!loggedIn) {
-            await this.login();
-        }
+        if (!loggedIn) await this.login();
         await this.loadDevicesSerialNumbers();
     }
 
@@ -47,34 +45,36 @@ export class FelicitySolarAPI {
         if (!this.isLoggedIn()) {
             throw new Error("Not logged in");
         }
-
         const todayDateStr = new Date().toISOString().slice(0, 19).replace("T", " ");
+        try {
+            const result = await fetch("https://shine-api.felicitysolar.com/device/get_device_snapshot", {
+                headers: {
+                    accept: "application/json, text/plain, */*",
+                    authorization: this.bearerToken as string,
+                    "content-type": "application/json",
+                },
+                body: `{"deviceSn":"${deviceSn}","deviceType":"BP","dateStr":"${todayDateStr}"}`,
+                method: "POST",
+            });
 
-        const result = await fetch("https://shine-api.felicitysolar.com/device/get_device_snapshot", {
-            headers: {
-                accept: "application/json, text/plain, */*",
-                authorization: this.bearerToken as string,
-                "content-type": "application/json",
-            },
-            body: `{"deviceSn":"${deviceSn}","deviceType":"BP","dateStr":"${todayDateStr}"}`,
-            method: "POST",
-        });
+            const data = await result.json();
 
-        const data = await result.json();
+            if ("data" in data === false) {
+                throw new Error(`Failed to get device snapshot: ${JSON.stringify(data)}`);
+            }
+            const deviceData = data.data;
+            if (!("productTypeEnum" in deviceData)) {
+                throw new Error(`Invalid device data: ${JSON.stringify(deviceData)}`);
+            }
 
-        if ("data" in data === false) {
-            throw new Error(`Failed to get device snapshot: ${JSON.stringify(data)}`);
+            if (deviceData.productTypeEnum === "LITHIUM_BATTERY_PACK") {
+                return data.data as BatterySnapshot;
+            }
+
+            throw new Error(`Unsupported device type: ${deviceData.productTypeEnum}`);
+        } catch (error) {
+            throw new Error(`Failed to get device snapshot for ${deviceSn}: ${error}`);
         }
-        const deviceData = data.data;
-        if (!("productTypeEnum" in deviceData)) {
-            throw new Error(`Invalid device data: ${JSON.stringify(deviceData)}`);
-        }
-
-        if (deviceData.productTypeEnum === "LITHIUM_BATTERY_PACK") {
-            return data.data as BatterySnapshot;
-        }
-
-        throw new Error(`Unsupported device type: ${deviceData.productTypeEnum}`);
     }
 
     /*

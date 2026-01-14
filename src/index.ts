@@ -1,7 +1,7 @@
 import { FelicitySolarAPI } from "./FelicitySolarAPI";
 import { FelicityWorker } from "./FelicityWorker";
 import http from "node:http";
-import { loadEnvFile } from "node:process";
+import { exit, loadEnvFile } from "node:process";
 
 try {
     loadEnvFile(".env");
@@ -14,7 +14,14 @@ let worker: FelicityWorker;
 
 async function init() {
     const api = new FelicitySolarAPI(process.env.FELICITY_USERNAME!, process.env.FELICITY_PASSWORD!);
-    await api.initialize();
+
+    try {
+        await api.initialize();
+    } catch (error) {
+        console.error("Failed to initialize FelicitySolarAPI:", error);
+        exit(1);
+    }
+
     worker = new FelicityWorker(api, 30_000);
 }
 

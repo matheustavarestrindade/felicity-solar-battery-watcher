@@ -1,7 +1,8 @@
-import { FelicitySolarAPI } from "./FelicitySolarAPI";
+import { BatterySnapshot, FelicitySolarAPI } from "./FelicitySolarAPI";
 
 export class FelicityWorker {
     private devicesData: DeviceData<any>[] = [];
+
     private api: FelicitySolarAPI;
     private updateTask: NodeJS.Timeout | null = null;
 
@@ -11,7 +12,7 @@ export class FelicityWorker {
     }
 
     public startPeriodicUpdate(intervalMs: number) {
-        this.fetchDevicesInfo(); // Initial fetch
+        this.fetchDevicesInfo();
         if (this.updateTask) clearInterval(this.updateTask);
         this.updateTask = setInterval(() => this.fetchDevicesInfo(), intervalMs);
     }
@@ -29,7 +30,14 @@ export class FelicityWorker {
 
     private async fetchDevicesInfo() {
         for (const deviceSn of this.api.getDevicesSerialNumbers()) {
-            const snapshot = await this.api.getDeviceSnapshot(deviceSn);
+            let snapshot: BatterySnapshot;
+            try {
+                snapshot = await this.api.getDeviceSnapshot(deviceSn);
+            } catch (error) {
+                console.error(`Failed to fetch snapshot for device ${deviceSn}:`, error);
+                continue;
+            }
+
             const batteryData = {
                 type: snapshot.productTypeEnum,
                 serialNumber: deviceSn,
